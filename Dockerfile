@@ -1,17 +1,13 @@
-FROM maven:3.9-eclipse-temurin-17 AS build
-WORKDIR /app
+FROM tomcat:9.0-jdk17
 
-# Copy backend code
-COPY attendance-backend/pom.xml .
-COPY attendance-backend/src ./src
+# Remove default ROOT app
+RUN rm -rf /usr/local/tomcat/webapps/ROOT
 
-# Build JAR
-RUN mvn clean package -DskipTests
+# Copy backend project into Tomcat ROOT
+COPY attendance-backend/ /usr/local/tomcat/webapps/ROOT/
 
-# Run stage
-FROM eclipse-temurin:17
-WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
-
+# Expose Tomcat port
 EXPOSE 9090
-CMD ["java","-jar","app.jar"]
+
+# Start Tomcat
+CMD ["catalina.sh", "run"]
